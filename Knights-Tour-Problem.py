@@ -35,7 +35,7 @@ def solve_knight_tour(n, start_x, start_y):
         return False
 
     if not backtrack(start_x, start_y, 1):
-        print("Tidak ada solusi.")
+        print("No solution.")
     else:
         print_solution(board, n)
 
@@ -43,5 +43,5 @@ if __name__ == "__main__":
     n, m = map(int, input().split())
     start_x, start_y = map(int, input().split())
 
-    print("\nUrutan langkah kuda (Knight's Tour):")
+    print("\nKnight's Tour:")
     solve_knight_tour(n, start_x, start_y)
