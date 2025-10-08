@@ -134,5 +134,5 @@ Our program solves this using a **brute-force (exact) algorithm**. It systematic
 ## Example Run
 Here is an example run showing the optimal path and total cost found by the brute-force algorithm:
 
-![Traveling Salesperson Problem Solution](images/TSP1.jpeg.png)
+![Traveling Salesperson Problem Solution](images/TSP1.jpeg)
 ![Traveling Salesperson Problem Solution](assets/tsp_solution.jpg)
