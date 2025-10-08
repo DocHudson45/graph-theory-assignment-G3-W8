@@ -126,8 +126,8 @@ def main():
         cpp.add_edge(eid, u, v, w)
     start = int(input())
     cost, route = cpp.solve(start)
-    print(f"Total Cost: {cost}")
-    print(f"Complete Route: {', '.join(map(str, route))}")
+    print(f"Cost: {cost}")
+    print(f"Route: {', '.join(map(str, route))}")
 
 if __name__ == "__main__":
     main()
