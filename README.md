@@ -74,8 +74,6 @@ Our solution uses a **standard backtracking algorithm**. This is a brute-force a
 ## Example Run
 Here is an example of a successful Knight's Tour on an 8x8 board:
 
-![Knight's Tour Solution](images/KT1.png)
-![Knight's Tour Solution](images/KT3.png)
 ![Knight's Tour Solution](assets/knight_tour_solution.jpg)
 
 <hr>
@@ -106,7 +104,7 @@ Our code implements the full, exact algorithm for solving the CPP.
 ## Example Run
 Here is an example run where the code calculates the minimum cost for a given graph:
 
-![Chinese Postman Problem Solution](images/CPP1.jpeg)
+![Chinese Postman Problem Solution](assets/cpp_solution.png)
 
 <hr>
 
