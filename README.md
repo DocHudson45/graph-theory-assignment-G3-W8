@@ -74,7 +74,7 @@ Our solution uses a **standard backtracking algorithm**. This is a brute-force a
 ## Example Run
 Here is an example of a successful Knight's Tour on an 8x8 board:
 
-![Knight's Tour Solution](assets/knight_tour_solution.png)
+![Knight's Tour Solution](assets/knight_tour_solution.jpg)
 
 <hr>
 
@@ -93,13 +93,13 @@ Our code implements the full, exact algorithm for solving the CPP.
 
 **Process:**
 1.  **Identify Odd Vertices:** The code first finds all vertices with an odd degree.
-2.  **Calculate Shortest Paths:** It uses **Dijkstra's algorithm** to compute the shortest path between every pair of these odd-degree vertices.
+2.  **Calculate Shortest Paths:** It uses **Floyd-Warshall algorithm** to compute the shortest path between every pair of these odd-degree vertices.
 3.  **Find Minimum Weight Matching:** It generates all possible pairings of the odd vertices and calculates the total cost for each set of pairs. It then selects the pairing with the absolute minimum total cost. These are the paths that need to be traversed twice.
 4.  **Find Eulerian Tour:** After conceptually adding these new paths to the graph, all vertices now have an even degree. The code then uses a **stack-based algorithm (Hierholzer's)** to find the final Eulerian tour.
 5.  **Calculate Total Cost:** The final cost is the sum of all original edge weights plus the cost of the minimum weight matching.
 
 **Output:**
-- The program outputs the **minimum total cost** for the postman's route and the **sequence of vertices** in that route.
+- The program outputs the **minimum total cost** for the postman's route and the **sequence of edge IDs** in that route.
 
 ## Example Run
 Here is an example run where the code calculates the minimum cost for a given graph:
@@ -132,4 +132,4 @@ Our program solves this using a **brute-force (exact) algorithm**. It systematic
 ## Example Run
 Here is an example run showing the optimal path and total cost found by the brute-force algorithm:
 
-![Traveling Salesperson Problem Solution](assets/tsp_solution.png)
+![Traveling Salesperson Problem Solution](assets/tsp_solution.jpg)
