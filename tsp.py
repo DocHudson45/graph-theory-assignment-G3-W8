@@ -38,4 +38,5 @@ for perm in itertools.permutations([x for x in nodes if x != start]):
         best_edges = edges_taken
 
 print("Cost:", min_cost)
-print("Route:", best_edges)
+print("Route:", ", ".join(map(str, best_edges)))
+
