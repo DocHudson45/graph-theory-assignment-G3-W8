@@ -82,7 +82,7 @@ Here is an example of a successful Knight's Tour on an 8x8 board:
 
 The **Chinese Postman Problem (CPP)** aims to find the shortest possible route that a postman must take to traverse every street (edge) at least once before returning to the start.
 
-The solution involves making the graph **Eulerian** (ensuring every vertex has an even degree) by duplicating the cheapest paths between vertices of odd degree.
+The solution implements an approximate way to solve the Chinese Postman Problem using **Djikstra's algorithm**, **Eulerian**, and **Greedy** approach. 
 
 ## How Our Code Works
 
@@ -93,10 +93,10 @@ Our code implements the full, exact algorithm for solving the CPP.
 
 **Process:**
 1.  **Identify Odd Vertices:** The code first finds all vertices with an odd degree.
-2.  **Calculate Shortest Paths:** It uses **Floyd-Warshall algorithm** to compute the shortest path between every pair of these odd-degree vertices.
-3.  **Find Minimum Weight Matching:** It generates all possible pairings of the odd vertices and calculates the total cost for each set of pairs. It then selects the pairing with the absolute minimum total cost. These are the paths that need to be traversed twice.
-4.  **Find Eulerian Tour:** After conceptually adding these new paths to the graph, all vertices now have an even degree. The code then uses a **stack-based algorithm (Hierholzer's)** to find the final Eulerian tour.
-5.  **Calculate Total Cost:** The final cost is the sum of all original edge weights plus the cost of the minimum weight matching.
+2.  **Calculate Shortest Paths:** It uses **Djikstra's algorithm** to compute the shortest path between every pair of these odd-degree vertices.
+3.  **Find Minimum Weight Matching:** It uses a **greedy approach** to pair up odd vertices - repeatedly selecting the closest unpaired vertices. This gives an approximate solution rather than the guaranteed optimal matching.
+4.  **Construct Route:** The route is constructed by combining all original edges with the edges from the matched paths.
+5.  **Calculate Total Cost:** The final cost is the sum of all original edge weights plus the cost of the greedy matching.
 
 **Output:**
 - The program outputs the **minimum total cost** for the postman's route and the **sequence of edge IDs** in that route.

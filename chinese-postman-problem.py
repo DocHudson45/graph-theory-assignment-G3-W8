@@ -1,22 +1,36 @@
-from collections import defaultdict, deque
-from itertools import combinations
-import sys
+from collections import defaultdict
+import heapq
 
 class ChinesePostman:
     def __init__(self):
-        self.graph = defaultdict(list)  
-        self.edges = []  
-        self.nodes = set()  
+        self.graph = defaultdict(list)
+        self.edges = {}  
+        self.nodes = set()
+
     def add_edge(self, edge_id, u, v, weight):
-        self.edges.append((edge_id, u, v, weight))
-        self.graph[u].append((v, weight, edge_id))
-        self.graph[v].append((u, weight, edge_id))
+        existing_edges = [(neighbor, w, eid) for neighbor, w, eid in self.graph[u] if neighbor == v and w > weight]
+        if existing_edges:
+            old_eid = existing_edges[0][2]
+            old_weight = existing_edges[0][1]
+            self.graph[u] = [(n, w, e) for n, w, e in self.graph[u] if e != old_eid]
+            self.graph[v] = [(n, w, e) for n, w, e in self.graph[v] if e != old_eid]
+            del self.edges[old_eid]
+            self.edges[edge_id] = (u, v, weight)
+            self.graph[u].append((v, weight, edge_id))
+            self.graph[v].append((u, weight, edge_id))
+            self.edges[old_eid] = (u, v, old_weight)
+            self.graph[u].append((v, old_weight, old_eid))
+            self.graph[v].append((u, old_weight, old_eid))
+        else:
+            self.edges[edge_id] = (u, v, weight)
+            self.graph[u].append((v, weight, edge_id))
+            self.graph[v].append((u, weight, edge_id))
         self.nodes.add(u)
         self.nodes.add(v)
-    
+
     def get_degrees(self):
         degrees = {}
-        for node in self.graph:
+        for node in self.nodes:
             degrees[node] = len(self.graph[node])
         return degrees
     
@@ -25,124 +39,83 @@ class ChinesePostman:
         odd_vertices = [node for node in self.nodes if degrees[node] % 2 == 1]
         return odd_vertices
     
-    def find_shortest_paths(self):
-        INF = float('inf')
-        nodes_list = list(self.nodes)
-        dist = defaultdict(lambda: defaultdict(lambda: INF))
-        next_node = defaultdict(lambda: defaultdict(lambda: None))
-        for node in nodes_list:
-            dist[node][node] = 0
-        for node in nodes_list:
-            for neighbor, weight, _ in self.graph[node]:
-                if weight < dist[node][neighbor]:
-                    dist[node][neighbor] = weight
-                    next_node[node][neighbor] = neighbor
-        for k in nodes_list:
-            for i in nodes_list:
-                for j in nodes_list:
-                    if dist[i][k] + dist[k][j] < dist[i][j]:
-                        dist[i][j] = dist[i][k] + dist[k][j]
-                        next_node[i][j] = next_node[i][k]
-        return dist, next_node
+    def dijkstra(self, start, end):
+        distances = {node: float('inf') for node in self.nodes}
+        distances[start] = 0
+        predecessors = {node: None for node in self.nodes}
+        edge_used = {}
+        pq = [(0, start)]
+        while pq:
+            current_dist, current = heapq.heappop(pq)
+            if current_dist > distances[current]:
+                continue
+            for neighbor, weight, edge_id in self.graph[current]:
+                new_dist = current_dist + weight
+                if new_dist < distances[neighbor]:
+                    distances[neighbor] = new_dist
+                    predecessors[neighbor] = current
+                    edge_used[neighbor] = edge_id
+                    heapq.heappush(pq, (new_dist, neighbor))
+        path = []
+        current = end
+        while predecessors[current] is not None:
+            path.append(edge_used[current])
+            current = predecessors[current]
+        return distances[end], path[::-1]
 
-    def find_min_weight_matching(self, odd_vertices, dist):
+    def find_min_weight_matching(self, odd_vertices):
         if len(odd_vertices) == 0:
             return []
-        min_cost = float('inf')
-        best_matching = None
-        def generate_pairings(vertices):
-            if len(vertices) == 0:
-                return [[]]
-            if len(vertices) == 2:
-                return [[(vertices[0], vertices[1])]]
-            first = vertices[0]
-            rest = vertices[1:]
-            pairings = []
-            for i, partner in enumerate(rest):
-                pair = (first, partner)
-                remaining = rest[:i] + rest[i+1:]
-                for sub_pairing in generate_pairings(remaining):
-                    pairings.append([pair] + sub_pairing)
-            return pairings
-        all_pairings = generate_pairings(odd_vertices)
-        for pairing in all_pairings:
-            cost = sum(dist[u][v] for u, v in pairing)
-            if cost < min_cost:
-                min_cost = cost
-                best_matching = pairing
-        return best_matching
-
-    def get_path_edges(self, u, v, next_node):
-        if next_node[u][v] is None:
-            return []
-        path = []
-        current = u
-        while current != v:
-            next_vertex = next_node[current][v]
-            best_eid = None
-            best_weight = float('inf')
-            for neighbor, weight, eid in self.graph[current]:
-                if neighbor == next_vertex and weight < best_weight:
-                    best_weight = weight
-                    best_eid = eid
-            path.append(best_eid)
-            current = next_vertex
-        return path
-
-    def build_adjacency_matrix(self):
-        adj_matrix = defaultdict(lambda: defaultdict(list))
-        for node in self.graph:
-            for neighbor, weight, eid in self.graph[node]:
-                adj_matrix[node][neighbor].append(eid)
-        for node in adj_matrix:
-            for neighbor in adj_matrix[node]:
-                adj_matrix[node][neighbor].sort()
-        return adj_matrix
+        pairings = {}
+        for i in range(len(odd_vertices)):
+            for j in range(i + 1, len(odd_vertices)):
+                u, v = odd_vertices[i], odd_vertices[j]
+                dist, path = self.dijkstra(u, v)
+                pairings[(u, v)] = (dist, path)
+        remaining = odd_vertices[:]
+        matching = []
+        total_cost = 0
+        matched_paths = []
+        while remaining:
+            current = remaining.pop(0)
+            best_match = min(remaining, key=lambda v: pairings.get((min(current, v), max(current, v)), (float('inf'), []))[0])
+            remaining.remove(best_match)
+            key = (min(current, best_match), max(current, best_match))
+            cost, path = pairings[key]
+            matching.append((current, best_match))
+            total_cost += cost
+            matched_paths.extend(path)
+        return matching, matched_paths, total_cost
 
     def find_eulerian_circuit(self, adj_matrix, start):
         circuit = []
         stack = [start]
-        current_path = []
+        visited_edges = set()
         while stack:
             v = stack[-1]
             found = False
             for u in sorted(adj_matrix[v].keys()):
-                if adj_matrix[v][u]:
-                    eid = adj_matrix[v][u].pop(0)
-                    if eid in adj_matrix[u][v]:
-                        adj_matrix[u][v].remove(eid)
-                    current_path.append(eid)
+                available = [eid for eid in adj_matrix[v][u] if eid not in visited_edges]
+                if available:
+                    best_eid = min(available, key=lambda e: self.edges[e][2])
+                    visited_edges.add(best_eid)
                     stack.append(u)
+                    circuit.append(best_eid)
                     found = True
                     break
             if not found:
-                if current_path:
-                    circuit.append(current_path.pop())
                 stack.pop()
         return circuit[::-1]
 
     def solve(self, start):
-        total_cost = sum(w for _, _, _, w in self.edges)
+        total_cost = sum(weight for _, _, weight in self.edges.values())
         odd_vertices = self.find_odd_vertices()
-        adj_matrix = self.build_adjacency_matrix()
         duplicate_cost = 0
+        matched_paths = []
         if len(odd_vertices) > 0:
-            dist, next_node = self.find_shortest_paths()
-            matching = self.find_min_weight_matching(odd_vertices, dist)
-            for u, v in matching:
-                duplicate_cost += dist[u][v]
-                path_edges = self.get_path_edges(u, v, next_node)
-                for eid in path_edges:
-                    for edge_id, node_u, node_v, weight in self.edges:
-                        if edge_id == eid:
-                            adj_matrix[node_u][node_v].append(eid)
-                            adj_matrix[node_v][node_u].append(eid)
-                            break
-            for node in adj_matrix:
-                for neighbor in adj_matrix[node]:
-                    adj_matrix[node][neighbor].sort()
-        circuit = self.find_eulerian_circuit(adj_matrix, start)
-        return total_cost + duplicate_cost, circuit
+            matching, matched_paths, duplicate_cost = self.find_min_weight_matching(odd_vertices)
+        route = list(self.edges.keys()) + matched_paths
+        return total_cost + duplicate_cost, route
 
 def main():
     n = int(input())
@@ -153,8 +126,8 @@ def main():
         cpp.add_edge(eid, u, v, w)
     start = int(input())
     cost, route = cpp.solve(start)
-    print(f"Cost: {cost}")
-    print(f"Route: {', '.join(map(str, route))}")
+    print(f"Total Cost: {cost}")
+    print(f"Complete Route: {', '.join(map(str, route))}")
 
 if __name__ == "__main__":
     main()
