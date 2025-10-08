@@ -75,7 +75,6 @@ Our solution uses a **standard backtracking algorithm**. This is a brute-force a
 Here is an example of a successful Knight's Tour on an 8x8 board:
 
 ![Knight's Tour Solution](images/KT1.png)
-![Knight's Tour Solution](images/KT2.png)
 ![Knight's Tour Solution](images/KT3.png)
 ![Knight's Tour Solution](assets/knight_tour_solution.jpg)
 
